@@ -25,6 +25,7 @@ import Foundation
 @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
 public class NativeEngine: NSObject, Engine, URLSessionDataDelegate, URLSessionWebSocketDelegate {
     private var task: URLSessionWebSocketTask?
+    private var session: URLSession?
     weak var delegate: EngineDelegate?
 
     public func register(delegate: EngineDelegate) {
@@ -32,10 +33,14 @@ public class NativeEngine: NSObject, Engine, URLSessionDataDelegate, URLSessionW
     }
 
     public func start(request: URLRequest) {
-        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
-        task = session.webSocketTask(with: request)
+        session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        task = session?.webSocketTask(with: request)
         doRead()
         task?.resume()
+    }
+
+    public func closeSession() {
+        session?.finishTasksAndInvalidate()
     }
 
     public func stop(closeCode: UInt16) {
